@@ -1,0 +1,23 @@
+@if (isInitialized()) {
+  <app-header
+    (openSearch)="openSearch()"
+    (openImport)="openImport()"
+  />
+
+  <app-main-layout
+    (requestImport)="openImport()"
+  />
+
+  @if (showSearchModal()) {
+    <app-search-dialog (close)="showSearchModal.set(false)" />
+  }
+
+  @if (showImportModal()) {
+    <app-import-dialog (close)="showImportModal.set(false)" />
+  }
+} @else {
+  <div class="app-loading-screen">
+    <div class="spinner"></div>
+    <p>Loading Technical Markdown Workspace...</p>
+  </div>
+}
