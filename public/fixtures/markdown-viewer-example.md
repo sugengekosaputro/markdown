@@ -336,22 +336,22 @@ quadrantChart
 ```mermaid
 requirementDiagram
     requirement viewer {
-        id: REQ-001
+        id: "REQ-001"
         text: Render Markdown documents
         risk: low
-        verifymethod: test
+        verifyMethod: test
     }
 
     requirement mermaid_support {
-        id: REQ-002
+        id: "REQ-002"
         text: Render Mermaid fenced blocks
         risk: medium
-        verifymethod: test
+        verifyMethod: test
     }
 
     element markdown_workspace {
         type: application
-        docref: PRD.md
+        docref: "PRD.md"
     }
 
     markdown_workspace - satisfies -> viewer

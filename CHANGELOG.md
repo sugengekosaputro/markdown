@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-09-12
+
+### Fixed
+- **Mermaid Light Mode Theme**: Fixed Mermaid theme caching so switching between Light and Dark mode dynamically re-renders diagrams with high-contrast light blue nuances in Light Mode and deep indigo in Dark Mode.
+- **Toggle Source / Diagram Bug**: Fixed issue where switching from Source view back to Diagram view caused the diagram to disappear; DOM node and rendered SVG state are now preserved using hidden attributes.
+- **Requirement Diagram & ZenUML Support**:
+  - Integrated `@mermaid-js/mermaid-zenuml` plugin to enable complete native ZenUML sequence diagram rendering.
+  - Fixed syntax quoting for `id` and `docref` in Requirement Diagram fixtures.
+  - Added automatic IndexedDB migration for existing workspace documents.
+- **Diagram Error Isolation**: Cleaned up Mermaid error SVG orphan nodes and improved the isolated error banner with syntax error details and raw source toggle.
+- **Code Block Contrast**: Upgraded code block styling to high-contrast dark IDE theme (`#0b0f19`) with vibrant syntax highlighting tokens, and increased contrast for inline code in both light and dark modes.
+
 ## [1.0.0] - 2026-09-08
 
 ### Added

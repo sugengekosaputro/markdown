@@ -6,11 +6,14 @@ import {
   OnDestroy,
   SimpleChanges,
   ViewChild,
+  effect,
   inject,
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import mermaid from 'mermaid';
+import zenuml from '@mermaid-js/mermaid-zenuml';
 import { WorkspaceStore } from '../../core/services/workspace.store';
 
 let mermaidInitialized = false;
@@ -102,7 +105,7 @@ let mermaidInitialized = false;
         </div>
       </div>
 
-      <!-- Diagram View Area -->
+      <!-- Error Notification Area -->
       @if (hasError()) {
         <div class="mermaid-error">
           <div class="error-header">
@@ -114,27 +117,31 @@ let mermaidInitialized = false;
             <h4>Mermaid diagram could not be rendered</h4>
           </div>
           <div class="error-message">{{ errorMessage() }}</div>
-          <button class="view-source-btn" (click)="showSource.set(!showSource())">
+          <button class="view-source-btn" (click)="toggleSource()">
             {{ showSource() ? 'Hide Raw Source' : 'View Raw Source' }}
           </button>
         </div>
       }
 
+      <!-- Diagram Viewport (Preserved in DOM to prevent reload/destruction) -->
+      <div
+        #viewport
+        class="diagram-viewport"
+        [hidden]="showSource() || hasError()"
+        (mousedown)="startPan($event)"
+        (wheel)="onWheel($event)"
+      >
+        <div
+          #diagramContainer
+          class="diagram-content"
+          [innerHTML]="safeSvg()"
+          [style.transform]="transformStyle()"
+        ></div>
+      </div>
+
+      <!-- Raw Source View -->
       @if (showSource()) {
         <pre class="source-view"><code>{{ code }}</code></pre>
-      } @else if (!hasError()) {
-        <div
-          #viewport
-          class="diagram-viewport"
-          (mousedown)="startPan($event)"
-          (wheel)="onWheel($event)"
-        >
-          <div
-            #diagramContainer
-            class="diagram-content"
-            [style.transform]="transformStyle()"
-          ></div>
-        </div>
       }
     </div>
   `,
@@ -255,8 +262,8 @@ let mermaidInitialized = false;
       justify-content: center;
       overflow: hidden;
       cursor: grab;
-      background: radial-gradient(var(--color-border-subtle) 1px, transparent 1px);
-      background-size: 16px 16px;
+      background: radial-gradient(var(--color-border-subtle) 1.5px, transparent 1.5px);
+      background-size: 18px 18px;
 
       &:active {
         cursor: grabbing;
@@ -278,14 +285,14 @@ let mermaidInitialized = false;
       ::ng-deep svg {
         max-width: 100%;
         height: auto;
-        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.06));
       }
     }
 
     .source-view {
       padding: 16px 20px;
       margin: 0;
-      background-color: var(--color-bg-surface);
+      background-color: #0d1117;
+      color: #e6edf3;
       font-family: var(--font-mono);
       font-size: 13px;
       line-height: 1.5;
@@ -334,6 +341,7 @@ let mermaidInitialized = false;
         border: 1px solid var(--color-border);
         border-radius: var(--radius-sm);
         color: var(--color-text-primary);
+        cursor: pointer;
 
         &:hover {
           border-color: var(--color-primary);
@@ -350,6 +358,7 @@ let mermaidInitialized = false;
 })
 export class MermaidRendererComponent implements OnChanges, OnDestroy {
   private workspaceStore = inject(WorkspaceStore);
+  private sanitizer = inject(DomSanitizer);
 
   @Input({ required: true }) code = '';
   @ViewChild('diagramContainer') diagramContainer?: ElementRef<HTMLDivElement>;
@@ -360,12 +369,13 @@ export class MermaidRendererComponent implements OnChanges, OnDestroy {
   readonly isRendering = signal(false);
   readonly hasError = signal(false);
   readonly errorMessage = signal('');
+  readonly renderedSvg = signal<string>('');
+  readonly safeSvg = signal<SafeHtml>('');
 
   // Zoom & Pan state
   readonly scale = signal(1);
   readonly translateX = signal(0);
   readonly translateY = signal(0);
-
   readonly zoomPercent = signal(100);
 
   private uniqueId = 'mermaid-' + Math.random().toString(36).substring(2, 10);
@@ -377,6 +387,16 @@ export class MermaidRendererComponent implements OnChanges, OnDestroy {
 
   constructor() {
     this.ensureMermaidInitialized();
+
+    // Re-render whenever theme changes
+    effect(() => {
+      // Subscribe to themeVersion
+      this.workspaceStore.themeVersion();
+      // Only re-render if initialized and code exists
+      if (this.code) {
+        this.renderDiagram();
+      }
+    });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -389,16 +409,14 @@ export class MermaidRendererComponent implements OnChanges, OnDestroy {
     this.removePanListeners();
   }
 
-  private ensureMermaidInitialized(): void {
+  private async ensureMermaidInitialized(): Promise<void> {
     if (!mermaidInitialized) {
-      const isDark = document.documentElement.classList.contains('dark-theme');
-      mermaid.initialize({
-        startOnLoad: false,
-        securityLevel: 'strict',
-        theme: isDark ? 'dark' : 'default',
-        fontFamily: 'Inter, sans-serif',
-        logLevel: 'error',
-      });
+      mermaid.setParseErrorHandler(() => {});
+      try {
+        await mermaid.registerExternalDiagrams([zenuml]);
+      } catch (e) {
+        console.warn('ZenUML registration warning:', e);
+      }
       mermaidInitialized = true;
     }
   }
@@ -410,36 +428,81 @@ export class MermaidRendererComponent implements OnChanges, OnDestroy {
     this.hasError.set(false);
     this.errorMessage.set('');
 
+    const elementId = this.uniqueId + '-' + Date.now();
+
     try {
-      this.ensureMermaidInitialized();
+      await this.ensureMermaidInitialized();
+
       const isDark = document.documentElement.classList.contains('dark-theme');
-      // Re-configure theme if needed
+
+      // Defensive configuration with crisp blue tones for light mode and indigo for dark mode
       mermaid.initialize({
         startOnLoad: false,
         securityLevel: 'strict',
         theme: isDark ? 'dark' : 'default',
-        fontFamily: 'Inter, sans-serif',
+        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+        themeVariables: isDark
+          ? {
+              darkMode: true,
+              background: '#0f172a',
+              primaryColor: '#1e293b',
+              primaryTextColor: '#f8fafc',
+              primaryBorderColor: '#6366f1',
+              lineColor: '#818cf8',
+              secondaryColor: '#162036',
+              tertiaryColor: '#1e293b',
+              mainBkg: '#0f172a',
+              nodeBorder: '#6366f1',
+              clusterBkg: '#162036',
+              clusterBorder: '#334155',
+              titleColor: '#f8fafc',
+              edgeLabelBackground: '#1e293b',
+            }
+          : {
+              darkMode: false,
+              background: '#ffffff',
+              primaryColor: '#e0e7ff',
+              primaryTextColor: '#1e1b4b',
+              primaryBorderColor: '#6366f1',
+              lineColor: '#4f46e5',
+              secondaryColor: '#f8fafc',
+              tertiaryColor: '#eef2ff',
+              mainBkg: '#e0e7ff',
+              nodeBorder: '#6366f1',
+              clusterBkg: '#f8fafc',
+              clusterBorder: '#cbd5e1',
+              titleColor: '#0f172a',
+              edgeLabelBackground: '#ffffff',
+            },
       });
 
-      const elementId = this.uniqueId + '-' + Date.now();
       const cleanCode = this.code.trim();
 
       // Render through Mermaid 11.17.2 API
       const { svg } = await mermaid.render(elementId, cleanCode);
-
-      if (this.diagramContainer) {
-        this.diagramContainer.nativeElement.innerHTML = svg;
-      }
+      this.renderedSvg.set(svg);
+      this.safeSvg.set(this.sanitizer.bypassSecurityTrustHtml(svg));
     } catch (err: any) {
       console.warn('Mermaid rendering isolated error:', err);
       this.hasError.set(true);
-      this.errorMessage.set(err?.message || 'Syntax error in Mermaid diagram definition.');
-      // Remove any temp element left by mermaid if error occurred
-      const orphan = document.getElementById(this.uniqueId);
-      if (orphan) orphan.remove();
+      this.errorMessage.set(this.formatErrorMessage(err));
+
+      // Clean up any stray error elements Mermaid might have appended to document.body
+      if (typeof document !== 'undefined') {
+        const stray = document.querySelectorAll(
+          `#d${elementId}, #${elementId}, [id^="dmermaid-"], div[id^="dmermaid-"]`
+        );
+        stray.forEach((el) => el.remove());
+      }
     } finally {
       this.isRendering.set(false);
     }
+  }
+
+  private formatErrorMessage(err: any): string {
+    const raw = (typeof err === 'string' ? err : err?.message || err?.str || '').toString();
+    const firstLine = raw.split('\n')[0] || 'Syntax error in Mermaid diagram definition.';
+    return firstLine;
   }
 
   transformStyle(): string {

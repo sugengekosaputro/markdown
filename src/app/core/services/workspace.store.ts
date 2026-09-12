@@ -30,6 +30,7 @@ export class WorkspaceStore {
 
   // Preferences Signals
   readonly theme = signal<ThemeMode>('system');
+  readonly themeVersion = signal<number>(0);
   readonly layoutMode = signal<LayoutMode>('default');
   readonly resourcePanelWidth = signal<number>(280);
   readonly editorPanelWidth = signal<number>(360);
@@ -61,6 +62,7 @@ export class WorkspaceStore {
       window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
         if (this.theme() === 'system') {
           this.applyThemeToDom('system');
+          this.themeVersion.update((v) => v + 1);
         }
       });
     }
@@ -101,6 +103,22 @@ export class WorkspaceStore {
         await this.seedInitialFixture();
         sections = await this.indexedDb.getAllSections();
         documents = await this.indexedDb.getAllDocuments();
+      } else {
+        // Auto-patch existing documents if they contain old unquoted requirement syntax
+        for (const doc of documents) {
+          if (
+            doc.content.includes('id: REQ-001') ||
+            doc.content.includes('docref: PRD.md') ||
+            doc.content.includes('verifymethod:')
+          ) {
+            doc.content = doc.content
+              .replace('id: REQ-001', 'id: "REQ-001"')
+              .replace('id: REQ-002', 'id: "REQ-002"')
+              .replace('docref: PRD.md', 'docref: "PRD.md"')
+              .replace(/verifymethod:/g, 'verifyMethod:');
+            await this.indexedDb.saveDocument(doc);
+          }
+        }
       }
 
       this.sections.set(sections);
@@ -518,6 +536,7 @@ flowchart LR
   setTheme(theme: ThemeMode): void {
     this.theme.set(theme);
     this.applyThemeToDom(theme);
+    this.themeVersion.update((v) => v + 1);
     this.persistPreferences();
   }
 
