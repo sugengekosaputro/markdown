@@ -611,8 +611,10 @@ radar-beta
 ## 34. Event Modeling
 
 ```mermaid
+---
+title: Markdown Import
+---
 eventmodeling
-    title Markdown Import
     tf 01 ui ImportDialog
     tf 02 cmd ImportDocument
     tf 03 evt DocumentImported

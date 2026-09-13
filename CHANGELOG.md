@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2026-09-13
+
+### Fixed
+- **Event Modeling Title Parsing**:
+  - Fixed syntax error (`Expecting token of type 'EOF' but found title`) by switching Event Modeling title declaration to standard Mermaid frontmatter (`--- title: ... ---`).
+  - Added runtime preprocessing in `MermaidRendererComponent` to automatically transform any legacy inline `title` in `eventmodeling` into frontmatter format.
+  - Added automatic IndexedDB data migration in `WorkspaceStore.initialize()` to upgrade existing stored workspace documents.
+- **Concurrent Render Cascade & `Cannot read properties of null (reading 'firstChild')`**:
+  - Replaced overbroad error cleanup selector (`div[id^="dmermaid-"]`) with strict element-isolated cleanup (`#d${elementId}, #${elementId}`), preventing errored diagrams from removing the temporary DOM containers of adjacent in-flight diagrams.
+  - Implemented a serialized promise render queue (`enqueueRender`) in `MermaidRendererComponent` ensuring thread-safe Mermaid execution without race conditions on shared diagram singleton databases.
+  - Fixed rendering for Treemap, Venn, Ishikawa, Wardley Map, Cynefin Framework, and TreeView diagrams.
+
 ## [1.0.1] - 2026-09-12
 
 ### Fixed

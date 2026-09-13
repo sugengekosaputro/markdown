@@ -104,8 +104,9 @@ export class WorkspaceStore {
         sections = await this.indexedDb.getAllSections();
         documents = await this.indexedDb.getAllDocuments();
       } else {
-        // Auto-patch existing documents if they contain old unquoted requirement syntax
+        // Auto-patch existing documents if they contain old syntax
         for (const doc of documents) {
+          let updated = false;
           if (
             doc.content.includes('id: REQ-001') ||
             doc.content.includes('docref: PRD.md') ||
@@ -116,6 +117,22 @@ export class WorkspaceStore {
               .replace('id: REQ-002', 'id: "REQ-002"')
               .replace('docref: PRD.md', 'docref: "PRD.md"')
               .replace(/verifymethod:/g, 'verifyMethod:');
+            updated = true;
+          }
+
+          if (
+            doc.content.includes('eventmodeling\n    title') ||
+            doc.content.includes('eventmodeling\n  title') ||
+            doc.content.includes('eventmodeling\ntitle')
+          ) {
+            doc.content = doc.content.replace(
+              /eventmodeling\s*\n\s*title\s+([^\n]+)/g,
+              '---\ntitle: $1\n---\neventmodeling'
+            );
+            updated = true;
+          }
+
+          if (updated) {
             await this.indexedDb.saveDocument(doc);
           }
         }

@@ -17,6 +17,66 @@ import zenuml from '@mermaid-js/mermaid-zenuml';
 import { WorkspaceStore } from '../../core/services/workspace.store';
 
 let mermaidInitialized = false;
+let currentMermaidTheme = '';
+let renderQueue = Promise.resolve();
+
+function enqueueRender<T>(fn: () => Promise<T>): Promise<T> {
+  const result = renderQueue.then(fn, fn);
+  renderQueue = result.then(
+    () => {},
+    () => {}
+  );
+  return result;
+}
+
+function configureMermaidTheme(force = false): void {
+  const isDark =
+    typeof document !== 'undefined' &&
+    document.documentElement.classList.contains('dark-theme');
+  const themeKey = isDark ? 'dark' : 'light';
+  if (!force && currentMermaidTheme === themeKey) return;
+  currentMermaidTheme = themeKey;
+
+  mermaid.initialize({
+    startOnLoad: false,
+    securityLevel: 'strict',
+    theme: isDark ? 'dark' : 'default',
+    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+    themeVariables: isDark
+      ? {
+          darkMode: true,
+          background: '#0f172a',
+          primaryColor: '#1e293b',
+          primaryTextColor: '#f8fafc',
+          primaryBorderColor: '#6366f1',
+          lineColor: '#818cf8',
+          secondaryColor: '#162036',
+          tertiaryColor: '#1e293b',
+          mainBkg: '#0f172a',
+          nodeBorder: '#6366f1',
+          clusterBkg: '#162036',
+          clusterBorder: '#334155',
+          titleColor: '#f8fafc',
+          edgeLabelBackground: '#1e293b',
+        }
+      : {
+          darkMode: false,
+          background: '#ffffff',
+          primaryColor: '#e0e7ff',
+          primaryTextColor: '#1e1b4b',
+          primaryBorderColor: '#6366f1',
+          lineColor: '#4f46e5',
+          secondaryColor: '#f8fafc',
+          tertiaryColor: '#eef2ff',
+          mainBkg: '#e0e7ff',
+          nodeBorder: '#6366f1',
+          clusterBkg: '#f8fafc',
+          clusterBorder: '#cbd5e1',
+          titleColor: '#0f172a',
+          edgeLabelBackground: '#ffffff',
+        },
+  });
+}
 
 @Component({
   selector: 'app-mermaid-renderer',
@@ -392,7 +452,7 @@ export class MermaidRendererComponent implements OnChanges, OnDestroy {
     effect(() => {
       // Subscribe to themeVersion
       this.workspaceStore.themeVersion();
-      // Only re-render if initialized and code exists
+      configureMermaidTheme(true);
       if (this.code) {
         this.renderDiagram();
       }
@@ -428,75 +488,45 @@ export class MermaidRendererComponent implements OnChanges, OnDestroy {
     this.hasError.set(false);
     this.errorMessage.set('');
 
+    let cleanCode = this.code.trim();
+
+    // EventModeling grammar in @mermaid-js/parser requires frontmatter for diagram title
+    // and throws syntax error on inline 'title'
+    if (/^\s*eventmodeling\b/m.test(cleanCode) && /^\s*title\s+[^\n]+/m.test(cleanCode)) {
+      const titleMatch = cleanCode.match(/^\s*title\s+([^\n]+)/m);
+      if (titleMatch) {
+        cleanCode = cleanCode.replace(/^\s*title\s+[^\n]+\n?/m, '');
+        cleanCode = `---\ntitle: ${titleMatch[1].trim()}\n---\n` + cleanCode;
+      }
+    }
+
     const elementId = this.uniqueId + '-' + Date.now();
 
-    try {
-      await this.ensureMermaidInitialized();
+    await enqueueRender(async () => {
+      try {
+        await this.ensureMermaidInitialized();
+        configureMermaidTheme();
 
-      const isDark = document.documentElement.classList.contains('dark-theme');
+        // Render through Mermaid 11.17.2 API
+        const { svg } = await mermaid.render(elementId, cleanCode);
+        this.renderedSvg.set(svg);
+        this.safeSvg.set(this.sanitizer.bypassSecurityTrustHtml(svg));
+      } catch (err: any) {
+        console.warn('Mermaid rendering isolated error:', err);
+        this.hasError.set(true);
+        this.errorMessage.set(this.formatErrorMessage(err));
 
-      // Defensive configuration with crisp blue tones for light mode and indigo for dark mode
-      mermaid.initialize({
-        startOnLoad: false,
-        securityLevel: 'strict',
-        theme: isDark ? 'dark' : 'default',
-        fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-        themeVariables: isDark
-          ? {
-              darkMode: true,
-              background: '#0f172a',
-              primaryColor: '#1e293b',
-              primaryTextColor: '#f8fafc',
-              primaryBorderColor: '#6366f1',
-              lineColor: '#818cf8',
-              secondaryColor: '#162036',
-              tertiaryColor: '#1e293b',
-              mainBkg: '#0f172a',
-              nodeBorder: '#6366f1',
-              clusterBkg: '#162036',
-              clusterBorder: '#334155',
-              titleColor: '#f8fafc',
-              edgeLabelBackground: '#1e293b',
-            }
-          : {
-              darkMode: false,
-              background: '#ffffff',
-              primaryColor: '#e0e7ff',
-              primaryTextColor: '#1e1b4b',
-              primaryBorderColor: '#6366f1',
-              lineColor: '#4f46e5',
-              secondaryColor: '#f8fafc',
-              tertiaryColor: '#eef2ff',
-              mainBkg: '#e0e7ff',
-              nodeBorder: '#6366f1',
-              clusterBkg: '#f8fafc',
-              clusterBorder: '#cbd5e1',
-              titleColor: '#0f172a',
-              edgeLabelBackground: '#ffffff',
-            },
-      });
-
-      const cleanCode = this.code.trim();
-
-      // Render through Mermaid 11.17.2 API
-      const { svg } = await mermaid.render(elementId, cleanCode);
-      this.renderedSvg.set(svg);
-      this.safeSvg.set(this.sanitizer.bypassSecurityTrustHtml(svg));
-    } catch (err: any) {
-      console.warn('Mermaid rendering isolated error:', err);
-      this.hasError.set(true);
-      this.errorMessage.set(this.formatErrorMessage(err));
-
-      // Clean up any stray error elements Mermaid might have appended to document.body
-      if (typeof document !== 'undefined') {
-        const stray = document.querySelectorAll(
-          `#d${elementId}, #${elementId}, [id^="dmermaid-"], div[id^="dmermaid-"]`
-        );
-        stray.forEach((el) => el.remove());
+        // Clean up ONLY this diagram's temporary elements that Mermaid may have left behind
+        if (typeof document !== 'undefined') {
+          const stray = document.querySelectorAll(
+            `#d${elementId}, #${elementId}`
+          );
+          stray.forEach((el) => el.remove());
+        }
+      } finally {
+        this.isRendering.set(false);
       }
-    } finally {
-      this.isRendering.set(false);
-    }
+    });
   }
 
   private formatErrorMessage(err: any): string {
