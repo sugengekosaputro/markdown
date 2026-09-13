@@ -1,23 +1,26 @@
 import {
   Component,
   ElementRef,
+  HostListener,
   computed,
   effect,
   inject,
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { Marked } from 'marked';
 import hljs from 'highlight.js';
 import { WorkspaceStore } from '../../core/services/workspace.store';
 import { SanitizerService } from '../../core/security/sanitizer.service';
+import { copyToClipboard } from '../../core/utils/clipboard.util';
 import { MermaidRendererComponent } from './mermaid-renderer.component';
 
 interface ViewerChunk {
   id: string;
   type: 'markdown' | 'mermaid';
   content: string;
-  renderedHtml?: string;
+  renderedHtml?: SafeHtml;
 }
 
 @Component({
@@ -222,6 +225,7 @@ interface ViewerChunk {
 export class MarkdownViewerComponent {
   private workspaceStore = inject(WorkspaceStore);
   private sanitizer = inject(SanitizerService);
+  private domSanitizer = inject(DomSanitizer);
   private elementRef = inject(ElementRef);
 
   readonly activeDoc = this.workspaceStore.activeDocument;
@@ -254,10 +258,11 @@ export class MarkdownViewerComponent {
           highlighted = this.escapeHtml(text);
         }
         const displayLang = (lang || 'code').toUpperCase();
+        const encodedCode = encodeURIComponent(text);
         return `<div class="code-block-wrapper">` +
           `<div class="code-block-header">` +
             `<span class="code-lang">${displayLang}</span>` +
-            `<button type="button" class="code-copy-btn" title="Copy code" data-copy-btn>` +
+            `<button type="button" class="code-copy-btn" title="Copy code" data-copy-btn="true" data-code="${encodedCode}">` +
               `<svg class="copy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">` +
                 `<rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>` +
                 `<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>` +
@@ -282,6 +287,12 @@ export class MarkdownViewerComponent {
     };
 
     this.markedParser.use({ renderer });
+
+    effect(() => {
+      // Re-attach direct DOM copy listeners whenever chunks update
+      this.chunks();
+      setTimeout(() => this.attachCodeCopyListeners(), 100);
+    });
   }
 
   createNewDoc(): void {
@@ -295,23 +306,55 @@ export class MarkdownViewerComponent {
     }
   }
 
-  async onViewerClick(event: MouseEvent): Promise<void> {
+  private attachCodeCopyListeners(): void {
+    if (typeof document === 'undefined') return;
+    const container = this.elementRef.nativeElement;
+    const buttons = container.querySelectorAll('.code-copy-btn, [data-copy-btn]');
+    buttons.forEach((btn: Element) => {
+      const buttonEl = btn as HTMLButtonElement;
+      if ((buttonEl as any).__copyBound) return;
+      (buttonEl as any).__copyBound = true;
+      buttonEl.addEventListener('click', (e: MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.handleCopyButtonClick(buttonEl);
+      });
+    });
+  }
+
+  @HostListener('click', ['$event'])
+  onViewerClick(event: MouseEvent): void {
     const target = event.target as HTMLElement | null;
     if (!target) return;
 
-    const copyBtn = target.closest('[data-copy-btn]') as HTMLButtonElement | null;
+    const copyBtn = target.closest('.code-copy-btn, [data-copy-btn]') as HTMLButtonElement | null;
     if (!copyBtn) return;
 
     event.preventDefault();
     event.stopPropagation();
+    this.handleCopyButtonClick(copyBtn);
+  }
 
-    const wrapper = copyBtn.closest('.code-block-wrapper');
-    const codeEl = wrapper ? wrapper.querySelector('code') : null;
-    const textToCopy = codeEl ? codeEl.textContent || '' : '';
+  async handleCopyButtonClick(copyBtn: HTMLButtonElement): Promise<void> {
+    let textToCopy = '';
+    const encodedCode = copyBtn.getAttribute('data-code');
+    if (encodedCode) {
+      try {
+        textToCopy = decodeURIComponent(encodedCode);
+      } catch {
+        textToCopy = encodedCode;
+      }
+    }
+
+    if (!textToCopy) {
+      const wrapper = copyBtn.closest('.code-block-wrapper');
+      const codeEl = wrapper ? wrapper.querySelector('code') : null;
+      textToCopy = codeEl ? codeEl.textContent || '' : '';
+    }
 
     if (!textToCopy) return;
 
-    const success = await this.copyToClipboard(textToCopy);
+    const success = await copyToClipboard(textToCopy);
     if (success) {
       const label = copyBtn.querySelector('.copy-label');
       const originalText = label ? label.textContent : 'Copy';
@@ -322,31 +365,6 @@ export class MarkdownViewerComponent {
         copyBtn.classList.remove('copied');
         if (label) label.textContent = originalText;
       }, 2000);
-    }
-  }
-
-  private async copyToClipboard(text: string): Promise<boolean> {
-    try {
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(text);
-        return true;
-      }
-    } catch {}
-
-    try {
-      const textArea = document.createElement('textarea');
-      textArea.value = text;
-      textArea.style.position = 'fixed';
-      textArea.style.left = '-999999px';
-      textArea.style.top = '-999999px';
-      document.body.appendChild(textArea);
-      textArea.focus();
-      textArea.select();
-      const successful = document.execCommand('copy');
-      textArea.remove();
-      return successful;
-    } catch {
-      return false;
     }
   }
 
@@ -366,11 +384,12 @@ export class MarkdownViewerComponent {
       const leadingMarkdown = markdown.substring(lastIndex, matchStart);
       if (leadingMarkdown.trim()) {
         const rawHtml = this.markedParser.parse(leadingMarkdown) as string;
+        const sanitized = this.sanitizer.sanitize(rawHtml);
         chunks.push({
           id: `chunk-md-${index++}`,
           type: 'markdown',
           content: leadingMarkdown,
-          renderedHtml: this.sanitizer.sanitize(rawHtml),
+          renderedHtml: this.domSanitizer.bypassSecurityTrustHtml(sanitized),
         });
       }
 
@@ -389,11 +408,12 @@ export class MarkdownViewerComponent {
     const trailingMarkdown = markdown.substring(lastIndex);
     if (trailingMarkdown.trim() || chunks.length === 0) {
       const rawHtml = this.markedParser.parse(trailingMarkdown) as string;
+      const sanitized = this.sanitizer.sanitize(rawHtml);
       chunks.push({
         id: `chunk-md-${index++}`,
         type: 'markdown',
         content: trailingMarkdown,
-        renderedHtml: this.sanitizer.sanitize(rawHtml),
+        renderedHtml: this.domSanitizer.bypassSecurityTrustHtml(sanitized),
       });
     }
 

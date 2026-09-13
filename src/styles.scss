@@ -428,6 +428,10 @@ input:focus, select:focus, textarea:focus {
           width: 13px;
           height: 13px;
         }
+
+        * {
+          pointer-events: none;
+        }
       }
     }
 

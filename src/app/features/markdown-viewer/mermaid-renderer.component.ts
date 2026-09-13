@@ -15,6 +15,7 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import mermaid from 'mermaid';
 import zenuml from '@mermaid-js/mermaid-zenuml';
 import { WorkspaceStore } from '../../core/services/workspace.store';
+import { copyToClipboard } from '../../core/utils/clipboard.util';
 
 let mermaidInitialized = false;
 let currentMermaidTheme = '';
@@ -721,25 +722,10 @@ export class MermaidRendererComponent implements OnChanges, OnDestroy {
 
   async copySource(): Promise<void> {
     if (!this.code) return;
-    try {
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(this.code);
-      } else {
-        const textArea = document.createElement('textarea');
-        textArea.value = this.code;
-        textArea.style.position = 'fixed';
-        textArea.style.left = '-999999px';
-        textArea.style.top = '-999999px';
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        document.execCommand('copy');
-        textArea.remove();
-      }
+    const success = await copyToClipboard(this.code);
+    if (success) {
       this.copied.set(true);
       setTimeout(() => this.copied.set(false), 2000);
-    } catch (err) {
-      console.warn('Failed to copy to clipboard:', err);
     }
   }
 

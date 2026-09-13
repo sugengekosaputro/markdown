@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.5] - 2026-09-13
+
+### Fixed
+- **Markdown Code Block Copy Button (TypeScript, JSON, Bash, etc.)**:
+  - **Angular DOM Sanitization Bypass**: Wrapped sanitized markdown chunks in Angular's `DomSanitizer.bypassSecurityTrustHtml(...)`. Previously, Angular's default HTML sanitizer ran a secondary pass on `[innerHTML]`, stripping custom button attributes and child elements.
+  - **Pristine Code Preservation**: Embedded pristine raw code directly into `data-code="${encodeURIComponent(text)}"` on the `.code-block-wrapper` container. This completely eliminates code mangling, indentation collapse, and HTML entity issues across all languages (TypeScript, JSON, Bash, Python, etc.).
+  - **Robust Event Handling & Pointer Events**: Added `.code-copy-btn * { pointer-events: none; }` in CSS to guarantee click events always register on the button even when clicking child SVG path/rect elements. Added both direct DOM click listeners in `attachCodeCopyListeners()` and `@HostListener('click')` delegator.
+  - **Unified Clipboard Utility**: Created [clipboard.util.ts](file:///Users/mypro/gengs/ai-research/markdown-viewer/src/app/core/utils/clipboard.util.ts) with resilient fallback to `document.execCommand('copy')` using an in-viewport temporary textarea for iframe or non-HTTPS environments.
+  - **Interactive Copied Feedback**: Guaranteed visual feedback with green badge and "Copied!" text indicator across all code blocks in both Dark and Light modes.
+
 ## [1.0.4] - 2026-09-13
 
 ### Added
