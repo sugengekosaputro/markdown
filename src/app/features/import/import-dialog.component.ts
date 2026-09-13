@@ -110,7 +110,7 @@ import { UNASSIGNED_SECTION_ID } from '../../core/models/workspace.models';
       border: 1px solid var(--color-border);
       border-radius: var(--radius-lg);
       padding: 24px;
-      box-shadow: var(--shadow-glass);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
       display: flex;
       flex-direction: column;
       gap: 18px;
@@ -135,7 +135,8 @@ import { UNASSIGNED_SECTION_ID } from '../../core/models/workspace.models';
         h3 {
           margin: 0;
           font-size: 1.15rem;
-          font-weight: 600;
+          font-weight: 700;
+          color: var(--color-text-primary);
         }
       }
 
@@ -145,12 +146,13 @@ import { UNASSIGNED_SECTION_ID } from '../../core/models/workspace.models';
         display: flex;
         align-items: center;
         justify-content: center;
-        color: var(--color-text-tertiary);
+        color: var(--color-text-secondary);
         border-radius: var(--radius-xs);
+        transition: all var(--transition-fast);
 
         &:hover {
           background-color: var(--color-bg-surface-hover);
-          color: var(--color-text-primary);
+          color: #ffffff;
         }
 
         svg {
@@ -167,13 +169,17 @@ import { UNASSIGNED_SECTION_ID } from '../../core/models/workspace.models';
       font-size: 13px;
 
       label {
-        color: var(--color-text-secondary);
-        font-weight: 500;
+        color: var(--color-text-primary);
+        font-weight: 600;
       }
 
       select {
         flex: 1;
         padding: 6px 12px;
+        background-color: var(--color-bg-surface-elevated);
+        border: 1px solid var(--color-border);
+        color: var(--color-text-primary);
+        border-radius: var(--radius-sm);
       }
     }
 
@@ -195,7 +201,7 @@ import { UNASSIGNED_SECTION_ID } from '../../core/models/workspace.models';
         background-color: var(--color-primary-light);
 
         .dropzone-icon {
-          color: var(--color-primary);
+          color: var(--color-primary-hover);
           transform: translateY(-2px);
         }
       }
@@ -203,7 +209,7 @@ import { UNASSIGNED_SECTION_ID } from '../../core/models/workspace.models';
       .dropzone-icon {
         width: 42px;
         height: 42px;
-        color: var(--color-text-tertiary);
+        color: var(--color-primary);
         margin-bottom: 12px;
         transition: transform var(--transition-fast), color var(--transition-fast);
       }
@@ -217,7 +223,7 @@ import { UNASSIGNED_SECTION_ID } from '../../core/models/workspace.models';
 
       .dropzone-subtitle {
         font-size: 12px;
-        color: var(--color-text-tertiary);
+        color: var(--color-text-secondary);
       }
     }
 
@@ -242,15 +248,19 @@ import { UNASSIGNED_SECTION_ID } from '../../core/models/workspace.models';
     }
 
     .btn {
-      padding: 6px 16px;
+      padding: 6px 18px;
       border-radius: var(--radius-sm);
       font-size: 13px;
-      font-weight: 500;
+      font-weight: 600;
       border: 1px solid var(--color-border);
+      background-color: var(--color-bg-surface-elevated);
       color: var(--color-text-primary);
+      transition: all var(--transition-fast);
 
       &:hover {
         background-color: var(--color-bg-surface-hover);
+        color: #ffffff;
+        border-color: var(--color-primary);
       }
     }
   `],

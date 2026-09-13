@@ -87,12 +87,18 @@ import { ExportService } from '../../core/services/export.service';
       border-radius: var(--radius-sm);
       cursor: pointer;
       user-select: none;
-      transition: background-color var(--transition-fast), color var(--transition-fast);
-      color: var(--color-text-secondary);
+      transition: all var(--transition-fast);
+      color: var(--color-text-primary);
+      font-weight: 500;
+      border-left: 3px solid transparent;
 
       &:hover {
         background-color: var(--color-bg-surface-hover);
-        color: var(--color-text-primary);
+        color: #ffffff;
+
+        .doc-icon {
+          color: #ffffff;
+        }
 
         .doc-actions {
           opacity: 1;
@@ -101,11 +107,16 @@ import { ExportService } from '../../core/services/export.service';
 
       &.active {
         background-color: var(--color-primary-light);
-        color: var(--color-primary);
-        font-weight: 500;
+        border-left-color: var(--color-primary);
+        color: #ffffff;
+        font-weight: 600;
 
         .doc-icon {
-          color: var(--color-primary);
+          color: var(--color-accent);
+        }
+
+        .doc-actions {
+          opacity: 1;
         }
       }
     }
@@ -113,7 +124,8 @@ import { ExportService } from '../../core/services/export.service';
     .doc-icon {
       display: flex;
       align-items: center;
-      color: var(--color-text-tertiary);
+      color: var(--color-accent);
+      transition: color var(--transition-fast);
 
       svg {
         width: 14px;
@@ -141,6 +153,7 @@ import { ExportService } from '../../core/services/export.service';
       background-color: var(--color-bg-surface);
       border: 1px solid var(--color-primary);
       border-radius: var(--radius-xs);
+      color: var(--color-text-primary);
     }
 
     .doc-actions {
@@ -158,12 +171,12 @@ import { ExportService } from '../../core/services/export.service';
       width: 22px;
       height: 22px;
       border-radius: var(--radius-xs);
-      color: var(--color-text-tertiary);
+      color: var(--color-text-secondary);
       transition: all var(--transition-fast);
 
       &:hover {
         background-color: var(--color-bg-surface-active);
-        color: var(--color-text-primary);
+        color: #ffffff;
       }
 
       &.danger:hover {

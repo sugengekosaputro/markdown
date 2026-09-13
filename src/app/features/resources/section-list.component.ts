@@ -224,6 +224,10 @@ import { DocumentItemComponent } from './document-item.component';
         .section-actions {
           opacity: 1;
         }
+
+        .collapse-btn {
+          color: var(--color-text-primary);
+        }
       }
     }
 
@@ -233,12 +237,14 @@ import { DocumentItemComponent } from './document-item.component';
       justify-content: center;
       width: 18px;
       height: 18px;
-      color: var(--color-text-tertiary);
+      color: var(--color-text-secondary);
+      transition: color var(--transition-fast);
     }
 
     .chevron-icon {
       width: 14px;
       height: 14px;
+      stroke-width: 2.5;
       transition: transform var(--transition-fast);
 
       &.collapsed {
@@ -256,7 +262,7 @@ import { DocumentItemComponent } from './document-item.component';
 
     .section-title {
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 700;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -264,19 +270,21 @@ import { DocumentItemComponent } from './document-item.component';
     }
 
     .system-tag {
-      font-size: 10px;
-      font-weight: 500;
-      color: var(--color-text-tertiary);
+      font-size: 9.5px;
+      font-weight: 700;
+      color: var(--color-text-secondary);
       text-transform: uppercase;
-      padding: 1px 4px;
+      padding: 1px 5px;
       border-radius: var(--radius-xs);
-      background-color: var(--color-bg-subtle);
+      background-color: var(--color-bg-surface-elevated);
+      border: 1px solid var(--color-border);
+      letter-spacing: 0.04em;
     }
 
     .doc-count {
       font-size: 11px;
-      color: var(--color-text-tertiary);
-      font-weight: 400;
+      color: var(--color-text-secondary);
+      font-weight: 600;
     }
 
     .section-rename-input {
@@ -284,6 +292,10 @@ import { DocumentItemComponent } from './document-item.component';
       font-weight: 600;
       padding: 2px 6px;
       width: 100%;
+      background-color: var(--color-bg-surface);
+      border: 1px solid var(--color-primary);
+      color: var(--color-text-primary);
+      border-radius: var(--radius-xs);
     }
 
     .section-actions {
@@ -301,12 +313,12 @@ import { DocumentItemComponent } from './document-item.component';
       width: 22px;
       height: 22px;
       border-radius: var(--radius-xs);
-      color: var(--color-text-tertiary);
+      color: var(--color-text-secondary);
       transition: all var(--transition-fast);
 
       &:hover {
         background-color: var(--color-bg-surface-active);
-        color: var(--color-text-primary);
+        color: #ffffff;
       }
 
       &.danger:hover {

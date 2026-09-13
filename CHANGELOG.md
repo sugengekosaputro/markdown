@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.3] - 2026-09-13
+
+### Changed
+- **Dark Mode Chrome & Shell High Contrast Overhaul**:
+  - Upgraded global dark theme CSS tokens: `--color-border` (`#3b4d6e`), `--color-border-subtle` (`#273650`), `--color-text-secondary` (`#cbd5e1`), `--color-text-tertiary` (`#94a3b8`), `--color-bg-surface-elevated` (`#1a2538`), and `--color-bg-subtle` (`#141f33`).
+  - Added `:root[data-theme='dark'], [data-theme='dark'], .dark-theme` selectors for bulletproof theme variable inheritance.
+  - **Explorer & Resources Panel**:
+    - Converted document list items and outline tree items to high-contrast crisp text (`#ffffff` / `#cbd5e1`), eliminating previously washed-out dark gray text.
+    - Added high-contrast level badges (`H1`–`H6`) with accent color indicators.
+    - Enhanced active document styling with a vibrant 3px accent left border (`#6366f1`) and highlighted background.
+    - Added dedicated rounded filter box with clear search icon and high-contrast placeholder in the Explorer panel.
+    - Improved `SYSTEM` badge with custom elevated pill styling and bright border.
+    - Added crisp 1px separation borders between Explorer, Viewer, and Editor panels with enhanced resize splitter handles.
+  - **Top Header**:
+    - Increased search input trigger border contrast, icon prominence, and elevated `⌘P` shortcut badge.
+    - Upgraded action buttons (`Import`, `Export ZIP`) and theme toggle button with clear borders and distinct hover feedback.
+    - Active layout switcher button now features solid primary background with white icon.
+  - **Code Editor (CodeMirror)**:
+    - Overrode gutter numbers with bright silver `#cbd5e1` text on dark surface `#0b1120`, making line numbers instantly legible.
+    - Upgraded editor toolbar title, save status badges, and action icon buttons.
+  - **Search & Import Modals**:
+    - Elevated dialog backdrop blur and added crisp border outlines (`#3b4d6e`) and deep box-shadows.
+    - Search results now feature high-contrast code snippet cards (`#e2e8f0` on dark badge) and distinct selection styling.
+
 ## [1.0.2] - 2026-09-13
 
 ### Fixed

@@ -129,7 +129,7 @@ import { WorkspaceStore } from '../../core/services/workspace.store';
       align-items: center;
       gap: 6px;
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--color-text-primary);
       text-transform: uppercase;
       letter-spacing: 0.05em;
@@ -146,10 +146,11 @@ import { WorkspaceStore } from '../../core/services/workspace.store';
       align-items: center;
       gap: 6px;
       font-size: 11px;
+      font-weight: 600;
       color: var(--color-text-secondary);
       padding: 2px 8px;
       border-radius: var(--radius-xs);
-      background-color: var(--color-bg-surface);
+      background-color: var(--color-bg-surface-elevated);
       border: 1px solid var(--color-border);
 
       .dot {
@@ -161,7 +162,7 @@ import { WorkspaceStore } from '../../core/services/workspace.store';
         &.saving { background-color: var(--color-accent); animation: blink 1s infinite; }
         &.saved { background-color: var(--color-success); }
         &.error { background-color: var(--color-danger); }
-        &.idle { background-color: var(--color-text-tertiary); }
+        &.idle { background-color: var(--color-text-secondary); }
       }
     }
 
@@ -183,7 +184,7 @@ import { WorkspaceStore } from '../../core/services/workspace.store';
 
       &:hover {
         background-color: var(--color-bg-surface-hover);
-        color: var(--color-text-primary);
+        color: #ffffff;
       }
 
       .icon {

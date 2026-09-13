@@ -195,7 +195,7 @@ import { OutlineTreeComponent } from './outline-tree.component';
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      color: var(--color-text-secondary);
+      color: var(--color-text-primary);
     }
 
     .header-actions {
@@ -216,7 +216,7 @@ import { OutlineTreeComponent } from './outline-tree.component';
 
       &:hover {
         background-color: var(--color-bg-surface-hover);
-        color: var(--color-text-primary);
+        color: #ffffff;
       }
 
       svg {
@@ -229,7 +229,7 @@ import { OutlineTreeComponent } from './outline-tree.component';
       display: flex;
       padding: 6px 8px;
       gap: 4px;
-      border-bottom: 1px solid var(--color-border-subtle);
+      border-bottom: 1px solid var(--color-border);
       background-color: var(--color-bg-subtle);
       flex-shrink: 0;
     }
@@ -240,11 +240,12 @@ import { OutlineTreeComponent } from './outline-tree.component';
       align-items: center;
       justify-content: center;
       gap: 6px;
-      padding: 4px 8px;
+      padding: 5px 8px;
       font-size: 12px;
-      font-weight: 500;
+      font-weight: 600;
       color: var(--color-text-secondary);
       border-radius: var(--radius-xs);
+      border: 1px solid transparent;
       transition: all var(--transition-fast);
 
       svg {
@@ -253,13 +254,14 @@ import { OutlineTreeComponent } from './outline-tree.component';
       }
 
       &:hover {
-        color: var(--color-text-primary);
+        color: #ffffff;
       }
 
       &.active {
         background-color: var(--color-bg-surface);
         color: var(--color-primary);
-        font-weight: 600;
+        font-weight: 700;
+        border-color: var(--color-border);
         box-shadow: var(--shadow-sm);
       }
     }
@@ -269,29 +271,39 @@ import { OutlineTreeComponent } from './outline-tree.component';
       align-items: center;
       padding: 6px 10px;
       gap: 6px;
-      border-bottom: 1px solid var(--color-border-subtle);
+      margin: 8px 10px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
       position: relative;
       flex-shrink: 0;
+      background-color: var(--color-bg-subtle);
+      transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+
+      &:focus-within {
+        border-color: var(--color-border-focus);
+        box-shadow: 0 0 0 2px var(--color-primary-glow);
+      }
     }
 
     .search-icon {
-      width: 13px;
-      height: 13px;
-      color: var(--color-text-tertiary);
+      width: 14px;
+      height: 14px;
+      color: var(--color-primary);
     }
 
     .filter-input {
       flex: 1;
       border: none;
       background: transparent;
-      padding: 2px 4px;
-      font-size: 12px;
+      padding: 1px 4px;
+      font-size: 12.5px;
+      font-weight: 500;
       color: var(--color-text-primary);
       outline: none;
       box-shadow: none !important;
 
       &::placeholder {
-        color: var(--color-text-tertiary);
+        color: var(--color-text-secondary);
       }
     }
 
@@ -301,7 +313,13 @@ import { OutlineTreeComponent } from './outline-tree.component';
       justify-content: center;
       width: 16px;
       height: 16px;
-      color: var(--color-text-tertiary);
+      color: var(--color-text-secondary);
+      border-radius: var(--radius-xs);
+
+      &:hover {
+        background-color: var(--color-bg-surface-hover);
+        color: var(--color-text-primary);
+      }
 
       svg {
         width: 11px;

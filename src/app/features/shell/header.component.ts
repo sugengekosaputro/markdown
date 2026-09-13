@@ -240,31 +240,34 @@ import { ExportService } from '../../core/services/export.service';
       border-radius: var(--radius-md);
       background-color: var(--color-bg-subtle);
       border: 1px solid var(--color-border);
-      color: var(--color-text-tertiary);
+      color: var(--color-text-secondary);
       font-size: 12.5px;
-      width: 220px;
+      font-weight: 500;
+      width: 230px;
       transition: all var(--transition-fast);
 
       &:hover {
         border-color: var(--color-border-focus);
         background-color: var(--color-bg-surface-hover);
-        color: var(--color-text-secondary);
+        color: var(--color-text-primary);
       }
 
       svg {
-        width: 13px;
-        height: 13px;
+        width: 14px;
+        height: 14px;
+        color: var(--color-primary);
       }
 
       kbd {
         margin-left: auto;
         font-family: var(--font-mono);
         font-size: 10px;
-        background-color: var(--color-bg-surface);
+        font-weight: 600;
+        background-color: var(--color-bg-surface-elevated);
         border: 1px solid var(--color-border);
         border-radius: var(--radius-xs);
-        padding: 1px 4px;
-        color: var(--color-text-tertiary);
+        padding: 1px 5px;
+        color: var(--color-text-primary);
       }
     }
 
@@ -275,25 +278,30 @@ import { ExportService } from '../../core/services/export.service';
 
     .status-pill {
       font-size: 11px;
-      font-weight: 500;
-      padding: 2px 10px;
+      font-weight: 600;
+      padding: 3px 10px;
       border-radius: var(--radius-full);
+      border: 1px solid transparent;
 
       &.warning {
         background-color: var(--color-warning-bg);
         color: var(--color-warning);
+        border-color: rgba(251, 191, 36, 0.4);
       }
       &.info {
         background-color: var(--color-primary-light);
         color: var(--color-primary);
+        border-color: rgba(99, 102, 241, 0.4);
       }
       &.success {
         background-color: var(--color-success-bg);
         color: var(--color-success);
+        border-color: rgba(52, 211, 153, 0.4);
       }
       &.danger {
         background-color: var(--color-danger-bg);
         color: var(--color-danger);
+        border-color: rgba(248, 113, 113, 0.4);
       }
     }
 
@@ -307,30 +315,31 @@ import { ExportService } from '../../core/services/export.service';
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 5px 10px;
+      padding: 5px 12px;
       border-radius: var(--radius-sm);
       font-size: 12.5px;
-      font-weight: 500;
-      color: var(--color-text-secondary);
+      font-weight: 600;
+      color: var(--color-text-primary);
       border: 1px solid var(--color-border);
-      background-color: var(--color-bg-surface);
+      background-color: var(--color-bg-subtle);
       transition: all var(--transition-fast);
 
       &:hover {
         background-color: var(--color-bg-surface-hover);
-        color: var(--color-text-primary);
-        border-color: var(--color-border-focus);
+        color: #ffffff;
+        border-color: var(--color-primary);
       }
 
       svg {
         width: 14px;
         height: 14px;
+        color: var(--color-primary);
       }
     }
 
     .divider {
       width: 1px;
-      height: 18px;
+      height: 20px;
       background-color: var(--color-border);
       margin: 0 4px;
     }
@@ -349,36 +358,39 @@ import { ExportService } from '../../core/services/export.service';
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 26px;
-      height: 26px;
+      width: 28px;
+      height: 28px;
       border-radius: var(--radius-xs);
-      color: var(--color-text-tertiary);
+      color: var(--color-text-secondary);
       transition: all var(--transition-fast);
 
       &:hover {
         color: var(--color-text-primary);
+        background-color: var(--color-bg-surface-hover);
       }
 
       &.active {
-        background-color: var(--color-bg-surface);
-        color: var(--color-primary);
+        background-color: var(--color-primary);
+        color: #ffffff;
         box-shadow: var(--shadow-sm);
       }
 
       svg {
-        width: 14px;
-        height: 14px;
+        width: 15px;
+        height: 15px;
       }
     }
 
     .theme-btn {
       border: 1px solid var(--color-border);
       border-radius: var(--radius-sm);
-      color: var(--color-text-secondary);
+      color: var(--color-text-primary);
+      background-color: var(--color-bg-subtle);
 
       &:hover {
         background-color: var(--color-bg-surface-hover);
-        color: var(--color-text-primary);
+        color: #ffffff;
+        border-color: var(--color-primary);
       }
     }
   `],

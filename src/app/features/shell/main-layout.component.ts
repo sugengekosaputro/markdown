@@ -104,6 +104,7 @@ import { MarkdownEditorComponent } from '../markdown-editor/markdown-editor.comp
     .resources-panel {
       flex-shrink: 0;
       background-color: var(--color-bg-surface);
+      border-right: 1px solid var(--color-border);
     }
 
     .viewer-panel {
@@ -131,20 +132,21 @@ import { MarkdownEditorComponent } from '../markdown-editor/markdown-editor.comp
       transition: background-color var(--transition-fast);
 
       &:hover, &:active {
-        background-color: var(--color-primary-glow);
+        background-color: var(--color-primary-light);
 
         .splitter-handle {
           background-color: var(--color-primary);
+          height: 48px;
         }
       }
     }
 
     .splitter-handle {
       width: 2px;
-      height: 24px;
+      height: 32px;
       border-radius: var(--radius-full);
       background-color: var(--color-border);
-      transition: background-color var(--transition-fast);
+      transition: background-color var(--transition-fast), height var(--transition-fast);
     }
   `],
 })

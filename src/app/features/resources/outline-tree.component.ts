@@ -50,36 +50,71 @@ import { OutlineItem } from '../../core/models/workspace.models';
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 5px 8px;
+      padding: 6px 8px;
       border-radius: var(--radius-sm);
       cursor: pointer;
       color: var(--color-text-secondary);
       text-decoration: none;
       font-size: 12.5px;
+      font-weight: 500;
       transition: all var(--transition-fast);
 
       &:hover {
         background-color: var(--color-bg-surface-hover);
-        color: var(--color-text-primary);
+        color: #ffffff;
+
+        .level-indicator {
+          border-color: var(--color-primary);
+          color: var(--color-primary-hover);
+        }
       }
 
-      &.level-1 { padding-left: 8px; font-weight: 600; color: var(--color-text-primary); }
-      &.level-2 { padding-left: 18px; }
-      &.level-3 { padding-left: 28px; }
-      &.level-4 { padding-left: 38px; font-size: 12px; }
-      &.level-5 { padding-left: 48px; font-size: 11.5px; }
-      &.level-6 { padding-left: 58px; font-size: 11px; }
+      &.level-1 {
+        padding-left: 8px;
+        font-weight: 700;
+        color: var(--color-text-primary);
+        font-size: 13px;
+      }
+      &.level-2 {
+        padding-left: 18px;
+        font-weight: 600;
+        color: var(--color-text-primary);
+        font-size: 12.5px;
+      }
+      &.level-3 {
+        padding-left: 28px;
+        font-weight: 500;
+        color: var(--color-text-primary);
+        font-size: 12px;
+      }
+      &.level-4 {
+        padding-left: 38px;
+        font-size: 12px;
+        color: var(--color-text-primary);
+      }
+      &.level-5 {
+        padding-left: 48px;
+        font-size: 11.5px;
+        color: var(--color-text-primary);
+      }
+      &.level-6 {
+        padding-left: 58px;
+        font-size: 11px;
+        color: var(--color-text-primary);
+      }
     }
 
     .level-indicator {
-      font-size: 10px;
+      font-size: 9.5px;
       font-family: var(--font-mono);
-      font-weight: 600;
-      color: var(--color-text-tertiary);
-      background-color: var(--color-bg-subtle);
-      padding: 1px 4px;
+      font-weight: 700;
+      color: var(--color-accent);
+      background-color: var(--color-bg-surface-elevated);
+      border: 1px solid var(--color-border);
+      padding: 1px 5px;
       border-radius: var(--radius-xs);
       flex-shrink: 0;
+      transition: all var(--transition-fast);
     }
 
     .outline-text {
@@ -92,8 +127,8 @@ import { OutlineItem } from '../../core/models/workspace.models';
     .outline-empty {
       padding: 30px 16px;
       text-align: center;
-      font-size: 12px;
-      color: var(--color-text-tertiary);
+      font-size: 12.5px;
+      color: var(--color-text-secondary);
       font-style: italic;
     }
   `],
