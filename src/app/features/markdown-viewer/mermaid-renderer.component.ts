@@ -48,6 +48,8 @@ function configureMermaidTheme(force = false): void {
           background: '#0f172a',
           primaryColor: '#1e293b',
           primaryTextColor: '#f8fafc',
+          textColor: '#f8fafc',
+          nodeTextColor: '#f8fafc',
           primaryBorderColor: '#6366f1',
           lineColor: '#818cf8',
           secondaryColor: '#162036',
@@ -64,6 +66,8 @@ function configureMermaidTheme(force = false): void {
           background: '#ffffff',
           primaryColor: '#e0e7ff',
           primaryTextColor: '#1e1b4b',
+          textColor: '#0f172a',
+          nodeTextColor: '#0f172a',
           primaryBorderColor: '#6366f1',
           lineColor: '#4f46e5',
           secondaryColor: '#f8fafc',
@@ -107,8 +111,35 @@ function configureMermaidTheme(force = false): void {
         </div>
 
         <div class="toolbar-actions">
-          @if (!hasError()) {
-            <button class="tool-btn" (click)="zoomIn()" title="Zoom In">
+          @if (!showSource() && !hasError()) {
+            <!-- Zoom controls -->
+            <button
+              class="tool-btn"
+              (click)="zoomOut()"
+              title="Zoom Out (Ctrl+-)"
+              [disabled]="scale() <= 0.3"
+            >
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                <line x1="8" y1="11" x2="14" y2="11"/>
+              </svg>
+            </button>
+
+            <button
+              class="tool-btn"
+              (click)="resetZoom()"
+              title="Reset Zoom to 100%"
+            >
+              <span class="zoom-level">{{ zoomPercent() }}%</span>
+            </button>
+
+            <button
+              class="tool-btn"
+              (click)="zoomIn()"
+              title="Zoom In (Ctrl++)"
+              [disabled]="scale() >= 3.5"
+            >
               <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="11" cy="11" r="8"/>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -116,22 +147,37 @@ function configureMermaidTheme(force = false): void {
                 <line x1="8" y1="11" x2="14" y2="11"/>
               </svg>
             </button>
-            <button class="tool-btn" (click)="zoomOut()" title="Zoom Out">
-              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="11" cy="11" r="8"/>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                <line x1="8" y1="11" x2="14" y2="11"/>
-              </svg>
-            </button>
-            <button class="tool-btn" (click)="resetZoom()" title="Reset Zoom">
-              <span class="zoom-level">{{ zoomPercent() }}%</span>
-            </button>
-            <button class="tool-btn" (click)="fitToContainer()" title="Fit to Container">
+
+            <button
+              class="tool-btn"
+              (click)="fitToContainer()"
+              title="Fit to Container"
+            >
               <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
               </svg>
             </button>
           }
+
+          <button
+            class="tool-btn copy-btn"
+            [class.copied]="copied()"
+            (click)="copySource()"
+            title="Copy Mermaid source code"
+          >
+            @if (copied()) {
+              <svg class="icon check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              <span>Copied!</span>
+            } @else {
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+              </svg>
+              <span>Copy</span>
+            }
+          </button>
 
           <button
             class="tool-btn"
@@ -201,7 +247,31 @@ function configureMermaidTheme(force = false): void {
 
       <!-- Raw Source View -->
       @if (showSource()) {
-        <pre class="source-view"><code>{{ code }}</code></pre>
+        <div class="source-view-container">
+          <div class="source-view-header">
+            <span class="source-lang-label">MERMAID SOURCE</span>
+            <button
+              class="source-copy-btn"
+              [class.copied]="copied()"
+              (click)="copySource()"
+              title="Copy source code"
+            >
+              @if (copied()) {
+                <svg class="icon check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span>Copied!</span>
+              } @else {
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+                <span>Copy Source</span>
+              }
+            </button>
+          </div>
+          <pre class="source-view"><code>{{ code }}</code></pre>
+        </div>
       }
     </div>
   `,
@@ -348,6 +418,71 @@ function configureMermaidTheme(force = false): void {
       }
     }
 
+    .source-view-container {
+      border-top: 1px solid var(--color-border);
+      background-color: #0d1117;
+    }
+
+    .source-view-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 14px;
+      background-color: #161b22;
+      border-bottom: 1px solid #30363d;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #8b949e;
+    }
+
+    .source-lang-label {
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      color: #58a6ff;
+    }
+
+    .source-copy-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid #30363d;
+      border-radius: var(--radius-xs);
+      color: #c9d1d9;
+      font-size: 11px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.16);
+        color: #ffffff;
+      }
+
+      &.copied {
+        color: #3fb950;
+        border-color: #3fb950;
+        background-color: rgba(63, 185, 80, 0.15);
+      }
+
+      .icon {
+        width: 12px;
+        height: 12px;
+      }
+    }
+
+    .tool-btn.copy-btn {
+      &.copied {
+        color: #10b981;
+        background-color: rgba(16, 185, 129, 0.15);
+      }
+
+      .check-icon {
+        color: #10b981;
+      }
+    }
+
     .source-view {
       padding: 16px 20px;
       margin: 0;
@@ -425,6 +560,7 @@ export class MermaidRendererComponent implements OnChanges, OnDestroy {
   @ViewChild('viewport') viewport?: ElementRef<HTMLDivElement>;
 
   readonly showSource = signal(false);
+  readonly copied = signal(false);
   readonly isFullscreen = signal(false);
   readonly isRendering = signal(false);
   readonly hasError = signal(false);
@@ -508,7 +644,19 @@ export class MermaidRendererComponent implements OnChanges, OnDestroy {
         configureMermaidTheme();
 
         // Render through Mermaid 11.17.2 API
-        const { svg } = await mermaid.render(elementId, cleanCode);
+        let { svg } = await mermaid.render(elementId, cleanCode);
+        const isDark =
+          typeof document !== 'undefined' &&
+          (document.documentElement.classList.contains('dark-theme') ||
+            document.documentElement.getAttribute('data-theme') === 'dark');
+
+        if (isDark) {
+          // Replace hardcoded dark colors on text/tspan/stroke in TreeView or beta diagrams
+          svg = svg
+            .replace(/fill="(?:#000000|#000|black|#333333|#333)"/gi, 'fill="#f8fafc"')
+            .replace(/stroke="(?:#000000|#000|black|#333333|#333)"/gi, 'stroke="#94a3b8"');
+        }
+
         this.renderedSvg.set(svg);
         this.safeSvg.set(this.sanitizer.bypassSecurityTrustHtml(svg));
       } catch (err: any) {
@@ -569,6 +717,30 @@ export class MermaidRendererComponent implements OnChanges, OnDestroy {
 
   toggleSource(): void {
     this.showSource.set(!this.showSource());
+  }
+
+  async copySource(): Promise<void> {
+    if (!this.code) return;
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(this.code);
+      } else {
+        const textArea = document.createElement('textarea');
+        textArea.value = this.code;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        textArea.remove();
+      }
+      this.copied.set(true);
+      setTimeout(() => this.copied.set(false), 2000);
+    } catch (err) {
+      console.warn('Failed to copy to clipboard:', err);
+    }
   }
 
   onWheel(event: WheelEvent): void {

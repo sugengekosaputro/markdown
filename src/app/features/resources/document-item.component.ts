@@ -94,10 +94,10 @@ import { ExportService } from '../../core/services/export.service';
 
       &:hover {
         background-color: var(--color-bg-surface-hover);
-        color: #ffffff;
+        color: var(--color-text-primary);
 
         .doc-icon {
-          color: #ffffff;
+          color: var(--color-primary);
         }
 
         .doc-actions {
@@ -106,13 +106,13 @@ import { ExportService } from '../../core/services/export.service';
       }
 
       &.active {
-        background-color: var(--color-primary-light);
-        border-left-color: var(--color-primary);
-        color: #ffffff;
+        background-color: var(--color-doc-active-bg);
+        border-left-color: var(--color-doc-active-border);
+        color: var(--color-doc-active-text);
         font-weight: 600;
 
         .doc-icon {
-          color: var(--color-accent);
+          color: var(--color-doc-active-border);
         }
 
         .doc-actions {
@@ -176,7 +176,7 @@ import { ExportService } from '../../core/services/export.service';
 
       &:hover {
         background-color: var(--color-bg-surface-active);
-        color: #ffffff;
+        color: var(--color-text-primary);
       }
 
       &.danger:hover {

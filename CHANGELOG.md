@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.4] - 2026-09-13
+
+### Added
+- **Copy / Clipboard Feature for Code Blocks & Diagrams**:
+  - **Code Blocks**: Added a sleek `.code-block-wrapper` header with uppercase language badge (`TYPESCRIPT`, `JSON`, `MARKDOWN`, etc.) and an interactive "Copy" button.
+  - Clicking "Copy" extracts the raw code, copies to clipboard (with fallback support), and gives interactive feedback ("Copied!" with checkmark and green glow for 2 seconds).
+  - **Mermaid Diagrams**:
+    - Added a dedicated "Copy" button in the diagram toolbar header.
+    - Added a "Copy Source" button inside the raw source view card.
+    - 1-click copying of Mermaid diagram definition directly to clipboard.
+  - Sanitizer updated to allow SVG elements, buttons, and copy attributes in DOMPurify.
+
+### Fixed
+- **Light Mode Active Document Contrast**: Fixed active document item in Explorer panel by replacing hardcoded `#ffffff` text with dynamic `--color-doc-active-text` (`#312e81`), restoring crystal-clear readability.
+- **Light Mode CodeMirror Gutter**: Scoped `.cm-gutters` styling to dark mode so that light mode editor now displays an elegant light background (`#f8fafc`) with slate line numbers (`#64748b`), eliminating the pitch-black gutter strip in light mode.
+- **Dark Mode TreeView Diagram Contrast**: Resolved dark/black text bug on Section 40 TreeView (and beta SVG diagrams) by updating theme variables (`textColor`, `nodeTextColor`), adding comprehensive CSS SVG overrides, and dynamically transforming dark fills/strokes in dark mode to bright silver/white (`#f8fafc`).
+
 ## [1.0.3] - 2026-09-13
 
 ### Changed

@@ -44,6 +44,9 @@
   --color-primary-hover: #4338ca;
   --color-primary-light: #eef2ff;
   --color-primary-glow: rgba(79, 70, 229, 0.15);
+  --color-doc-active-bg: rgba(99, 102, 241, 0.12);
+  --color-doc-active-text: #312e81;
+  --color-doc-active-border: #4f46e5;
 
   --color-accent: #0284c7;
   --color-success: #059669;
@@ -90,6 +93,9 @@
   --color-primary-hover: #818cf8;
   --color-primary-light: rgba(99, 102, 241, 0.25);
   --color-primary-glow: rgba(99, 102, 241, 0.4);
+  --color-doc-active-bg: rgba(99, 102, 241, 0.25);
+  --color-doc-active-text: #ffffff;
+  --color-doc-active-border: #6366f1;
 
   --color-accent: #38bdf8;
   --color-success: #34d399;
@@ -364,7 +370,77 @@ input:focus, select:focus, textarea:focus {
     transition: all var(--transition-fast);
   }
 
-  /* Preformatted Code Blocks (High-contrast IDE Dark Theme) */
+  /* Preformatted Code Blocks with Header & Copy Button */
+  .code-block-wrapper {
+    margin: 1.8em 0;
+    border-radius: var(--radius-md);
+    border: 1px solid #1e293b;
+    background-color: #0b0f19;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+
+    .code-block-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 14px;
+      background-color: #131b2e;
+      border-bottom: 1px solid #1e293b;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #94a3b8;
+      user-select: none;
+
+      .code-lang {
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #cbd5e1;
+      }
+
+      .code-copy-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 8px;
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: var(--radius-xs);
+        color: #94a3b8;
+        font-size: 11px;
+        font-family: inherit;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+
+        &:hover {
+          background-color: rgba(255, 255, 255, 0.1);
+          color: #ffffff;
+          border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        &.copied {
+          color: #10b981;
+          border-color: rgba(16, 185, 129, 0.3);
+          background-color: rgba(16, 185, 129, 0.1);
+        }
+
+        .copy-icon {
+          width: 13px;
+          height: 13px;
+        }
+      }
+    }
+
+    pre {
+      margin: 0 !important;
+      padding: 16px 20px !important;
+      border: none !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      background-color: transparent !important;
+    }
+  }
+
   pre {
     margin: 1.8em 0;
     padding: 18px 22px;
@@ -462,7 +538,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* ==========================================================================
-   CodeMirror Dark Theme Alignment
+   CodeMirror Theme Alignment (Light & Dark Scoped)
    ========================================================================== */
 .cm-editor {
   height: 100%;
@@ -477,28 +553,6 @@ input:focus, select:focus, textarea:focus {
     padding: 12px 0;
   }
 
-  .cm-gutters {
-    background-color: #0b1120 !important;
-    border-right: 1px solid var(--color-border) !important;
-    color: #94a3b8 !important;
-  }
-
-  .cm-lineNumbers .cm-gutterElement {
-    color: #94a3b8 !important;
-    padding: 0 10px 0 14px !important;
-    font-weight: 500;
-  }
-
-  .cm-activeLineGutter {
-    background-color: rgba(99, 102, 241, 0.2) !important;
-    color: #ffffff !important;
-    font-weight: 700 !important;
-  }
-
-  .cm-activeLine {
-    background-color: rgba(99, 102, 241, 0.12) !important;
-  }
-
   .cm-cursor {
     border-left-color: var(--color-accent) !important;
     border-left-width: 2px !important;
@@ -506,5 +560,92 @@ input:focus, select:focus, textarea:focus {
 
   .cm-selectionBackground, ::selection {
     background-color: rgba(99, 102, 241, 0.35) !important;
+  }
+}
+
+/* Light Theme CodeMirror Gutters */
+:root:not([data-theme='dark']) .cm-editor,
+[data-theme='light'] .cm-editor {
+  .cm-gutters {
+    background-color: #f8fafc !important;
+    border-right: 1px solid var(--color-border) !important;
+    color: #64748b !important;
+  }
+
+  .cm-lineNumbers .cm-gutterElement {
+    color: #64748b !important;
+    padding: 0 10px 0 14px !important;
+    font-weight: 500;
+  }
+
+  .cm-activeLineGutter {
+    background-color: rgba(99, 102, 241, 0.12) !important;
+    color: #4338ca !important;
+    font-weight: 700 !important;
+  }
+
+  .cm-activeLine {
+    background-color: rgba(99, 102, 241, 0.05) !important;
+  }
+}
+
+/* Dark Theme CodeMirror Gutters */
+[data-theme='dark'] .cm-editor,
+.dark-theme .cm-editor {
+  .cm-gutters {
+    background-color: #0b1120 !important;
+    border-right: 1px solid var(--color-border) !important;
+    color: #cbd5e1 !important;
+  }
+
+  .cm-lineNumbers .cm-gutterElement {
+    color: #cbd5e1 !important;
+    padding: 0 10px 0 14px !important;
+    font-weight: 600;
+  }
+
+  .cm-activeLineGutter {
+    background-color: rgba(99, 102, 241, 0.25) !important;
+    color: #ffffff !important;
+    font-weight: 700 !important;
+  }
+
+  .cm-activeLine {
+    background-color: rgba(99, 102, 241, 0.15) !important;
+  }
+}
+
+/* Mermaid Diagram Dark Mode TreeView & SVG Text Enhancements */
+[data-theme='dark'] .mermaid-container,
+.dark-theme .mermaid-container {
+  .treeView text,
+  .treeView tspan,
+  .treeview text,
+  .treeview tspan,
+  .treeView-node text,
+  .treeView-node tspan,
+  .tree-node text,
+  .tree-node tspan,
+  [class*='tree'] text,
+  [class*='tree'] tspan,
+  g.treeview text,
+  g.treeView text,
+  svg[id^='mermaid-'] [class*='tree'] text,
+  svg[id^='mermaid-'] [class*='tree'] tspan,
+  svg[id^='mermaid-'] text.node-text,
+  svg[id^='mermaid-'] g.node text {
+    fill: #f8fafc !important;
+    color: #f8fafc !important;
+  }
+
+  .treeView path,
+  .treeView line,
+  .treeview path,
+  .treeview line,
+  [class*='tree'] path,
+  [class*='tree'] line,
+  g.treeview path,
+  g.treeView path {
+    stroke: #94a3b8 !important;
   }
 }

@@ -25,7 +25,7 @@ interface ViewerChunk {
   standalone: true,
   imports: [CommonModule, MermaidRendererComponent],
   template: `
-    <div class="viewer-wrapper" #scrollContainer>
+    <div class="viewer-wrapper" #scrollContainer (click)="onViewerClick($event)">
       @if (activeDoc(); as doc) {
         <article class="markdown-body">
           <!-- Document Header -->
@@ -253,7 +253,20 @@ export class MarkdownViewerComponent {
         } else {
           highlighted = this.escapeHtml(text);
         }
-        return `<pre><code class="hljs ${language || ''}">${highlighted}</code></pre>`;
+        const displayLang = (lang || 'code').toUpperCase();
+        return `<div class="code-block-wrapper">` +
+          `<div class="code-block-header">` +
+            `<span class="code-lang">${displayLang}</span>` +
+            `<button type="button" class="code-copy-btn" title="Copy code" data-copy-btn>` +
+              `<svg class="copy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">` +
+                `<rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>` +
+                `<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>` +
+              `</svg>` +
+              `<span class="copy-label">Copy</span>` +
+            `</button>` +
+          `</div>` +
+          `<pre><code class="hljs ${language || ''}">${highlighted}</code></pre>` +
+        `</div>`;
       },
       heading: ({ tokens, depth }: { tokens: any[]; depth: number }) => {
         const text = tokens.map((t) => t.raw || '').join('');
@@ -279,6 +292,61 @@ export class MarkdownViewerComponent {
     const el = this.elementRef.nativeElement.querySelector(`#${slug}`);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  async onViewerClick(event: MouseEvent): Promise<void> {
+    const target = event.target as HTMLElement | null;
+    if (!target) return;
+
+    const copyBtn = target.closest('[data-copy-btn]') as HTMLButtonElement | null;
+    if (!copyBtn) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const wrapper = copyBtn.closest('.code-block-wrapper');
+    const codeEl = wrapper ? wrapper.querySelector('code') : null;
+    const textToCopy = codeEl ? codeEl.textContent || '' : '';
+
+    if (!textToCopy) return;
+
+    const success = await this.copyToClipboard(textToCopy);
+    if (success) {
+      const label = copyBtn.querySelector('.copy-label');
+      const originalText = label ? label.textContent : 'Copy';
+      copyBtn.classList.add('copied');
+      if (label) label.textContent = 'Copied!';
+
+      setTimeout(() => {
+        copyBtn.classList.remove('copied');
+        if (label) label.textContent = originalText;
+      }, 2000);
+    }
+  }
+
+  private async copyToClipboard(text: string): Promise<boolean> {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        return true;
+      }
+    } catch {}
+
+    try {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      const successful = document.execCommand('copy');
+      textArea.remove();
+      return successful;
+    } catch {
+      return false;
     }
   }
 
