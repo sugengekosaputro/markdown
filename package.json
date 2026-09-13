@@ -7,6 +7,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "deploy": "ng build && wrangler deploy",
+    "deploy:worker": "ng build && wrangler deploy",
     "deploy:pages": "ng build && wrangler pages deploy dist/markdown-viewer/browser"
   },
   "prettier": {
