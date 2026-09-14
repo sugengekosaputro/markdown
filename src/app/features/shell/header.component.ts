@@ -22,8 +22,8 @@ import { ExportService } from '../../core/services/export.service';
             </svg>
           </div>
           <div class="brand-text">
-            <span class="brand-name">Technical Markdown</span>
-            <span class="brand-badge">Workspace</span>
+            <span class="brand-name">Nobody</span>
+            <span class="brand-badge">Markdown Viewer</span>
           </div>
         </div>
 
