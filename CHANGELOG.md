@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-10-01
+
+### Added
+- **JSON Previewer & Formatter Workspace**:
+  - **Header Mode Switcher**: Added an elegant top bar segmented control (`[ 📝 Markdown | { } JSON ]`) with keyboard shortcuts `⌘1` / `⌘2` to switch seamlessly between Markdown and JSON workspaces.
+  - **Isolated Local-First Storage**: Dedicated IndexedDB database (`json_workspace_db`) keeping JSON documents and sections 100% private and decoupled from Markdown workspace.
+  - **JSON Resource Explorer**: Sections accordion, JSON documents list, file filtering, drag-and-drop reordering, and multi-file JSON dropzone.
+  - **Interactive Collapsible Tree Viewer**: Hierarchical AST visualizer with color-coded type badges (`string`, `number`, `boolean`, `null`, `object`, `array`), depth expansion controls (Collapse All, L1, L2, Expand All), in-tree search & match highlighting, breadcrumbs path bar, and 1-click **Copy Value / Copy Key / Copy JSONPath**.
+  - **CodeMirror 6 JSON Editor & Formatter**: Syntax-highlighted editor with `@codemirror/lang-json` and `@codemirror/lint` real-time linter, pinpoint error markers, debounced autosave (350ms), and toolbar actions: **Prettify 2s**, **Prettify 4s**, **Minify**, and recursive **Sort Keys (A-Z)**.
+  - **Multi-Format Import & Export**: Contextual import dialog supporting `.json` files and ZIP bundling for both Markdown and JSON workspaces.
+
 ## [1.0.5] - 2026-09-13
 
 ### Fixed

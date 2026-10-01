@@ -1,23 +1,34 @@
 @if (isInitialized()) {
   <app-header
+    [activeWorkspace]="activeWorkspace()"
+    (workspaceChange)="switchWorkspace($event)"
     (openSearch)="openSearch()"
     (openImport)="openImport()"
   />
 
-  <app-main-layout
-    (requestImport)="openImport()"
-  />
+  @if (activeWorkspace() === 'markdown') {
+    <app-main-layout
+      (requestImport)="openImport()"
+    />
+  } @else {
+    <app-json-main-layout
+      (requestImport)="openImport()"
+    />
+  }
 
   @if (showSearchModal()) {
     <app-search-dialog (close)="showSearchModal.set(false)" />
   }
 
   @if (showImportModal()) {
-    <app-import-dialog (close)="showImportModal.set(false)" />
+    <app-import-dialog
+      [mode]="activeWorkspace()"
+      (close)="showImportModal.set(false)"
+    />
   }
 } @else {
   <div class="app-loading-screen">
     <div class="spinner"></div>
-    <p>Loading Technical Markdown Workspace...</p>
+    <p>Loading Technical Workspace...</p>
   </div>
 }

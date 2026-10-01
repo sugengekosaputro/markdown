@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { saveAs } from 'file-saver';
 import JSZip from 'jszip';
 import { MarkdownDocument, Section } from '../models/workspace.models';
+import { JsonDocument, JsonSection } from '../models/json-workspace.models';
 
 @Injectable({
   providedIn: 'root',
@@ -10,6 +11,12 @@ export class ExportService {
   exportSingleDocument(doc: MarkdownDocument): void {
     const filename = doc.fileName.endsWith('.md') ? doc.fileName : `${doc.fileName}.md`;
     const blob = new Blob([doc.content], { type: 'text/markdown;charset=utf-8' });
+    saveAs(blob, filename);
+  }
+
+  exportSingleJsonDocument(doc: JsonDocument): void {
+    const filename = doc.fileName.endsWith('.json') ? doc.fileName : `${doc.fileName}.json`;
+    const blob = new Blob([doc.content], { type: 'application/json;charset=utf-8' });
     saveAs(blob, filename);
   }
 
@@ -45,7 +52,26 @@ export class ExportService {
     saveAs(content, 'workspace-export.zip');
   }
 
+  async exportJsonWorkspaceAsZip(sections: JsonSection[], docs: JsonDocument[]): Promise<void> {
+    const zip = new JSZip();
+
+    for (const section of sections) {
+      const folderName = this.sanitizeFolderName(section.name);
+      const folder = zip.folder(folderName) || zip;
+      const sectionDocs = docs.filter((d) => d.sectionId === section.id);
+
+      for (const doc of sectionDocs) {
+        const filename = doc.fileName.endsWith('.json') ? doc.fileName : `${doc.fileName}.json`;
+        folder.file(filename, doc.content);
+      }
+    }
+
+    const content = await zip.generateAsync({ type: 'blob' });
+    saveAs(content, 'json-workspace-export.zip');
+  }
+
   private sanitizeFolderName(name: string): string {
     return name.replace(/[/\\?%*:|"<>]/g, '-').trim() || 'Section';
   }
 }
+

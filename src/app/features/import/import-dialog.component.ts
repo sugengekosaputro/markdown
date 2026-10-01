@@ -1,8 +1,10 @@
-import { Component, EventEmitter, Output, inject, signal } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { WorkspaceStore } from '../../core/services/workspace.store';
+import { JsonWorkspaceStore } from '../../core/services/json-workspace.store';
 import { UNASSIGNED_SECTION_ID } from '../../core/models/workspace.models';
+import { UNASSIGNED_JSON_SECTION_ID } from '../../core/models/json-workspace.models';
 
 @Component({
   selector: 'app-import-dialog',
@@ -19,7 +21,7 @@ import { UNASSIGNED_SECTION_ID } from '../../core/models/workspace.models';
               <polyline points="17 8 12 3 7 8"/>
               <line x1="12" y1="3" x2="12" y2="15"/>
             </svg>
-            <h3>Import Markdown Files</h3>
+            <h3>{{ mode === 'markdown' ? 'Import Markdown Files' : 'Import JSON Files' }}</h3>
           </div>
           <button class="close-btn" (click)="close.emit()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -33,7 +35,7 @@ import { UNASSIGNED_SECTION_ID } from '../../core/models/workspace.models';
         <div class="destination-field">
           <label>Target Section:</label>
           <select [(ngModel)]="targetSectionId">
-            @for (s of sections(); track s.id) {
+            @for (s of currentSections(); track s.id) {
               <option [value]="s.id">{{ s.name }} {{ s.isSystem ? '(Default)' : '' }}</option>
             }
           </select>
@@ -52,7 +54,7 @@ import { UNASSIGNED_SECTION_ID } from '../../core/models/workspace.models';
             #fileInput
             type="file"
             multiple
-            accept=".md,.markdown,text/markdown,text/plain"
+            [accept]="mode === 'markdown' ? '.md,.markdown,text/markdown,text/plain' : '.json,application/json,text/plain'"
             (change)="onFileSelected($event)"
             style="display: none"
           />
@@ -65,8 +67,12 @@ import { UNASSIGNED_SECTION_ID } from '../../core/models/workspace.models';
             <line x1="15" y1="15" x2="12" y2="12"/>
           </svg>
 
-          <p class="dropzone-title">Click to choose or drag & drop Markdown files here</p>
-          <p class="dropzone-subtitle">Supports .md and .markdown. Multi-file selection enabled.</p>
+          <p class="dropzone-title">
+            Click to choose or drag & drop {{ mode === 'markdown' ? 'Markdown' : 'JSON' }} files here
+          </p>
+          <p class="dropzone-subtitle">
+            Supports {{ mode === 'markdown' ? '.md and .markdown' : '.json' }}. Multi-file selection enabled.
+          </p>
         </div>
 
         <!-- Result Summary -->
@@ -148,6 +154,9 @@ import { UNASSIGNED_SECTION_ID } from '../../core/models/workspace.models';
         justify-content: center;
         color: var(--color-text-secondary);
         border-radius: var(--radius-xs);
+        border: none;
+        background: transparent;
+        cursor: pointer;
         transition: all var(--transition-fast);
 
         &:hover {
@@ -255,6 +264,7 @@ import { UNASSIGNED_SECTION_ID } from '../../core/models/workspace.models';
       border: 1px solid var(--color-border);
       background-color: var(--color-bg-surface-elevated);
       color: var(--color-text-primary);
+      cursor: pointer;
       transition: all var(--transition-fast);
 
       &:hover {
@@ -267,14 +277,30 @@ import { UNASSIGNED_SECTION_ID } from '../../core/models/workspace.models';
 })
 export class ImportDialogComponent {
   private workspaceStore = inject(WorkspaceStore);
+  private jsonStore = inject(JsonWorkspaceStore);
 
+  @Input() mode: 'markdown' | 'json' = 'markdown';
   @Output() close = new EventEmitter<void>();
 
-  readonly sections = this.workspaceStore.sections;
   targetSectionId: string = UNASSIGNED_SECTION_ID;
 
   readonly isDragging = signal(false);
   readonly summary = signal<{ imported: number; skipped: number } | null>(null);
+
+  get currentSections(): () => any[] {
+    return () => {
+      if (this.mode === 'markdown') {
+        return this.workspaceStore.sections();
+      }
+      return this.jsonStore.sections();
+    };
+  }
+
+  ngOnInit(): void {
+    if (this.mode === 'json') {
+      this.targetSectionId = UNASSIGNED_JSON_SECTION_ID;
+    }
+  }
 
   onDragOver(event: DragEvent): void {
     event.preventDefault();
@@ -299,7 +325,12 @@ export class ImportDialogComponent {
   }
 
   private async processFiles(files: File[]): Promise<void> {
-    const res = await this.workspaceStore.importMultipleFiles(files, this.targetSectionId);
-    this.summary.set(res);
+    if (this.mode === 'markdown') {
+      const res = await this.workspaceStore.importMultipleFiles(files, this.targetSectionId);
+      this.summary.set(res);
+    } else {
+      await this.jsonStore.importMultipleFiles(files, this.targetSectionId);
+      this.summary.set({ imported: files.length, skipped: 0 });
+    }
   }
 }

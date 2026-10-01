@@ -1,7 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { Subject } from 'rxjs';
 
-export type ShortcutAction = 'import' | 'search' | 'toggle-editor' | 'save' | 'export-current';
+export type ShortcutAction =
+  | 'import'
+  | 'search'
+  | 'toggle-editor'
+  | 'save'
+  | 'export-current'
+  | 'workspace-markdown'
+  | 'workspace-json';
 
 @Injectable({
   providedIn: 'root',
@@ -19,8 +26,18 @@ export class KeyboardShortcutsService {
         if (modKey && !e.altKey) {
           const key = e.key.toLowerCase();
 
+          // Cmd/Ctrl + 1 (Markdown Workspace)
+          if (key === '1') {
+            e.preventDefault();
+            this.shortcutTriggeredSubject.next('workspace-markdown');
+          }
+          // Cmd/Ctrl + 2 (JSON Workspace)
+          else if (key === '2') {
+            e.preventDefault();
+            this.shortcutTriggeredSubject.next('workspace-json');
+          }
           // Cmd/Ctrl + S
-          if (key === 's') {
+          else if (key === 's') {
             e.preventDefault();
             if (e.shiftKey) {
               this.shortcutTriggeredSubject.next('export-current');

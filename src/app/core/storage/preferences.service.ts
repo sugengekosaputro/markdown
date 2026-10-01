@@ -35,4 +35,24 @@ export class PreferencesService {
       console.warn('Failed to save preferences to localStorage:', e);
     }
   }
+
+  getActiveWorkspace(): 'markdown' | 'json' {
+    try {
+      const val = localStorage.getItem('nobody_active_workspace');
+      if (val === 'markdown' || val === 'json') {
+        return val;
+      }
+    } catch (e) {
+      console.warn('Failed to load active workspace:', e);
+    }
+    return 'markdown';
+  }
+
+  setActiveWorkspace(mode: 'markdown' | 'json'): void {
+    try {
+      localStorage.setItem('nobody_active_workspace', mode);
+    } catch (e) {
+      console.warn('Failed to save active workspace:', e);
+    }
+  }
 }

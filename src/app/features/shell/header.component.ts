@@ -1,7 +1,8 @@
-import { Component, EventEmitter, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LayoutMode, ThemeMode } from '../../core/models/workspace.models';
 import { WorkspaceStore } from '../../core/services/workspace.store';
+import { JsonWorkspaceStore } from '../../core/services/json-workspace.store';
 import { ExportService } from '../../core/services/export.service';
 
 @Component({
@@ -10,7 +11,7 @@ import { ExportService } from '../../core/services/export.service';
   imports: [CommonModule],
   template: `
     <header class="app-header">
-      <!-- Left: Logo & Brand -->
+      <!-- Left: Logo, Brand & Workspace Switcher -->
       <div class="header-left">
         <div class="brand">
           <div class="logo-icon">
@@ -23,12 +24,39 @@ import { ExportService } from '../../core/services/export.service';
           </div>
           <div class="brand-text">
             <span class="brand-name">Nobody</span>
-            <span class="brand-badge">Markdown Viewer</span>
+            <span class="brand-badge">{{ activeWorkspace === 'markdown' ? 'Markdown' : 'JSON Previewer' }}</span>
           </div>
         </div>
 
+        <!-- Workspace Mode Switcher (Segmented Control) -->
+        <div class="workspace-switcher" title="Switch Workspace (⌘1 / ⌘2)">
+          <button
+            class="switcher-btn"
+            [class.active]="activeWorkspace === 'markdown'"
+            (click)="switchWorkspace('markdown')"
+            title="Markdown Technical Workspace (⌘1)"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+            <span>Markdown</span>
+            <kbd class="key-hint">⌘1</kbd>
+          </button>
+          <button
+            class="switcher-btn"
+            [class.active]="activeWorkspace === 'json'"
+            (click)="switchWorkspace('json')"
+            title="JSON Previewer & Formatter (⌘2)"
+          >
+            <span class="json-glyph">&#123;&#125;</span>
+            <span>JSON</span>
+            <kbd class="key-hint">⌘2</kbd>
+          </button>
+        </div>
+
         <!-- Search Bar Button -->
-        <button class="search-trigger" (click)="openSearch.emit()" title="Search (Ctrl/Cmd+P)">
+        <button class="search-trigger" (click)="openSearch.emit()" title="Search documents (Ctrl/Cmd+P)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="11" cy="11" r="8"/>
             <line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -40,7 +68,7 @@ import { ExportService } from '../../core/services/export.service';
 
       <!-- Center: Status indication -->
       <div class="header-center">
-        @switch (saveStatus()) {
+        @switch (currentSaveStatus()) {
           @case ('editing') {
             <span class="status-pill warning">Editing</span>
           }
@@ -58,7 +86,11 @@ import { ExportService } from '../../core/services/export.service';
 
       <!-- Right: Actions & Preferences -->
       <div class="header-right">
-        <button class="action-btn" (click)="openImport.emit()" title="Import Markdown (Ctrl/Cmd+O)">
+        <button
+          class="action-btn"
+          (click)="openImport.emit()"
+          [title]="activeWorkspace === 'markdown' ? 'Import Markdown (Ctrl/Cmd+O)' : 'Import JSON (Ctrl/Cmd+O)'"
+        >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
             <polyline points="17 8 12 3 7 8"/>
@@ -67,7 +99,11 @@ import { ExportService } from '../../core/services/export.service';
           <span>Import</span>
         </button>
 
-        <button class="action-btn" (click)="exportWorkspace()" title="Export All Documents as ZIP">
+        <button
+          class="action-btn"
+          (click)="exportWorkspace()"
+          [title]="activeWorkspace === 'markdown' ? 'Export All Documents as ZIP' : 'Export All JSON as ZIP'"
+        >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
             <polyline points="7 10 12 15 17 10"/>
@@ -82,7 +118,7 @@ import { ExportService } from '../../core/services/export.service';
         <div class="layout-toggles" title="Layout Mode">
           <button
             class="mode-btn"
-            [class.active]="layoutMode() === 'default'"
+            [class.active]="currentLayoutMode() === 'default'"
             (click)="setLayoutMode('default')"
             title="3 Panels (Resources + Viewer + Editor)"
           >
@@ -94,7 +130,7 @@ import { ExportService } from '../../core/services/export.service';
           </button>
           <button
             class="mode-btn"
-            [class.active]="layoutMode() === 'viewer-dominant'"
+            [class.active]="currentLayoutMode() === 'viewer-dominant'"
             (click)="setLayoutMode('viewer-dominant')"
             title="Viewer Dominant (Editor collapsed)"
           >
@@ -105,7 +141,7 @@ import { ExportService } from '../../core/services/export.service';
           </button>
           <button
             class="mode-btn"
-            [class.active]="layoutMode() === 'viewer-only'"
+            [class.active]="currentLayoutMode() === 'viewer-only'"
             (click)="setLayoutMode('viewer-only')"
             title="Viewer Only"
           >
@@ -115,7 +151,7 @@ import { ExportService } from '../../core/services/export.service';
           </button>
           <button
             class="mode-btn"
-            [class.active]="layoutMode() === 'editor-only'"
+            [class.active]="currentLayoutMode() === 'editor-only'"
             (click)="setLayoutMode('editor-only')"
             title="Editor Only"
           >
@@ -183,7 +219,7 @@ import { ExportService } from '../../core/services/export.service';
     .header-left {
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 16px;
     }
 
     .brand {
@@ -232,6 +268,72 @@ import { ExportService } from '../../core/services/export.service';
       color: var(--color-primary);
     }
 
+    /* Workspace Switcher (Segmented Control) */
+    .workspace-switcher {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      padding: 2px;
+      border-radius: var(--radius-md, 8px);
+      background-color: var(--color-bg-subtle);
+      border: 1px solid var(--color-border);
+    }
+
+    .switcher-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--color-text-secondary);
+      border: none;
+      background: transparent;
+      border-radius: var(--radius-xs, 4px);
+      cursor: pointer;
+      transition: all var(--transition-fast, 150ms ease);
+
+      svg {
+        width: 12px;
+        height: 12px;
+      }
+
+      .json-glyph {
+        font-family: var(--font-mono, monospace);
+        font-size: 11px;
+        font-weight: 800;
+        color: #f59e0b;
+      }
+
+      .key-hint {
+        font-family: var(--font-mono, monospace);
+        font-size: 9.5px;
+        background: rgba(0, 0, 0, 0.06);
+        padding: 0 4px;
+        border-radius: 3px;
+        color: var(--color-text-tertiary);
+      }
+
+      &:hover {
+        color: var(--color-text-primary);
+      }
+
+      &.active {
+        background-color: var(--color-primary);
+        color: #ffffff;
+        box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.08));
+
+        .json-glyph {
+          color: #ffffff;
+        }
+
+        .key-hint {
+          background: rgba(255, 255, 255, 0.2);
+          color: #ffffff;
+        }
+      }
+    }
+
     .search-trigger {
       display: flex;
       align-items: center;
@@ -243,8 +345,9 @@ import { ExportService } from '../../core/services/export.service';
       color: var(--color-text-secondary);
       font-size: 12.5px;
       font-weight: 500;
-      width: 230px;
+      width: 210px;
       transition: all var(--transition-fast);
+      cursor: pointer;
 
       &:hover {
         border-color: var(--color-border-focus);
@@ -322,6 +425,7 @@ import { ExportService } from '../../core/services/export.service';
       color: var(--color-text-primary);
       border: 1px solid var(--color-border);
       background-color: var(--color-bg-subtle);
+      cursor: pointer;
       transition: all var(--transition-fast);
 
       &:hover {
@@ -362,6 +466,9 @@ import { ExportService } from '../../core/services/export.service';
       height: 28px;
       border-radius: var(--radius-xs);
       color: var(--color-text-secondary);
+      border: none;
+      background: transparent;
+      cursor: pointer;
       transition: all var(--transition-fast);
 
       &:hover {
@@ -397,17 +504,40 @@ import { ExportService } from '../../core/services/export.service';
 })
 export class HeaderComponent {
   private workspaceStore = inject(WorkspaceStore);
+  private jsonStore = inject(JsonWorkspaceStore);
   private exportService = inject(ExportService);
 
+  @Input() activeWorkspace: 'markdown' | 'json' = 'markdown';
+  @Output() workspaceChange = new EventEmitter<'markdown' | 'json'>();
   @Output() openSearch = new EventEmitter<void>();
   @Output() openImport = new EventEmitter<void>();
 
-  readonly layoutMode = this.workspaceStore.layoutMode;
   readonly theme = this.workspaceStore.theme;
-  readonly saveStatus = this.workspaceStore.saveStatus;
+
+  switchWorkspace(mode: 'markdown' | 'json'): void {
+    if (this.activeWorkspace !== mode) {
+      this.workspaceChange.emit(mode);
+    }
+  }
+
+  currentSaveStatus(): string {
+    return this.activeWorkspace === 'markdown'
+      ? this.workspaceStore.saveStatus()
+      : this.jsonStore.saveStatus();
+  }
+
+  currentLayoutMode(): LayoutMode {
+    return this.activeWorkspace === 'markdown'
+      ? this.workspaceStore.layoutMode()
+      : this.jsonStore.layoutMode();
+  }
 
   setLayoutMode(mode: LayoutMode): void {
-    this.workspaceStore.setLayoutMode(mode);
+    if (this.activeWorkspace === 'markdown') {
+      this.workspaceStore.setLayoutMode(mode);
+    } else {
+      this.jsonStore.setLayoutMode(mode);
+    }
   }
 
   toggleTheme(): void {
@@ -422,8 +552,14 @@ export class HeaderComponent {
   }
 
   exportWorkspace(): void {
-    const sections = this.workspaceStore.sections();
-    const documents = this.workspaceStore.documents();
-    this.exportService.exportWorkspaceAsZip(sections, documents);
+    if (this.activeWorkspace === 'markdown') {
+      const sections = this.workspaceStore.sections();
+      const documents = this.workspaceStore.documents();
+      this.exportService.exportWorkspaceAsZip(sections, documents);
+    } else {
+      const sections = this.jsonStore.sections();
+      const documents = this.jsonStore.documents();
+      this.exportService.exportJsonWorkspaceAsZip(sections, documents);
+    }
   }
 }

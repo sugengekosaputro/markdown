@@ -19,6 +19,7 @@ Dokumentasi ini dikelompokkan ke dalam 7 modul spesifikasi teknis dan analitis:
 | **05** | [05_UI_UX_DESIGN_SYSTEM.md](file:///Users/mypro/gengs/ai-research/markdown-viewer/docs/05_UI_UX_DESIGN_SYSTEM.md) | 3-Panel layout, splitters, design tokens, light/dark themes, kontras | UI/UX Designer, Frontend Dev | UI/UX & Styling |
 | **06** | [06_CORE_ENGINES_DEEP_DIVE.md](file:///Users/mypro/gengs/ai-research/markdown-viewer/docs/06_CORE_ENGINES_DEEP_DIVE.md) | Bedah teknis: Markdown parser, Mermaid 11.17.2, CodeMirror 6 | Engine Specialist, Senior Dev | Core Engines |
 | **07** | [07_FUTURE_ROADMAP_AND_MCP_READINESS.md](file:///Users/mypro/gengs/ai-research/markdown-viewer/docs/07_FUTURE_ROADMAP_AND_MCP_READINESS.md) | Rencana transisi ke backend, sharing content, dan integrasi MCP | Architect, AI Engineer, Backend Dev | Future Architecture |
+| **JSON** | [PRD-json.md](file:///Users/mypro/gengs/ai-research/markdown-viewer/docs/feature-json-previewer/PRD-json.md) | Spesifikasi teknis & PRD master fitur JSON Previewer & Formatter Workspace | Product, Frontend, Architect | Feature Specification |
 
 ---
 
